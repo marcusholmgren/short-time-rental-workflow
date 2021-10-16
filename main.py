@@ -32,6 +32,9 @@ def go(config: DictConfig):
     steps_par = config['main']['steps']
     active_steps = steps_par.split(",") if steps_par != "all" else _steps
 
+    # You can get the path at the root of the MLflow project with this:
+    root_path = hydra.utils.get_original_cwd()
+
     # Move to a temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
 
@@ -49,10 +52,16 @@ def go(config: DictConfig):
             )
 
         if "basic_cleaning" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+            print('hej hej')
+            _ = mlflow.run(
+                os.path.join(root_path, "src", "basic_cleaning"),
+                "main",
+                parameters={
+                    "parameter1": "a",
+                    "parameter2": "b",
+                    "parameter3": "c"
+                }
+            )
 
         if "data_check" in active_steps:
             ##################
