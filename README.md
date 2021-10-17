@@ -476,6 +476,13 @@ you can improve the performance. You can also look at the Hydra documentation fo
 optimization. Hydra is very powerful, and allows even to use things like Bayesian optimization without any change
 to the pipeline itself.
 
+Find the best model with Hydra multi-run
+```bash
+mlflow run . \
+   -P steps=train_random_forest \
+   -P hydra_options="modeling.max_tfidf_features=10,15,30 modeling.random_forest.max_features=0.1,0.33,0.5,0.75,1. -m"
+```
+
 ### Select the best model
 Go to W&B and select the best performing model. We are going to consider the Mean Absolute Error as our target metric,
 so we are going to choose the model with the lowest MAE.
