@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Performs basic cleaning on the data and save the results in Weights & Biases
+Download from Weights & Biases the raw dataset and apply some basic data cleaning,
+exporting the result to a new artifact in W&B
 """
 import argparse
 import logging
@@ -28,27 +29,47 @@ def go(args):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="This step cleans data")
-
+    parser = argparse.ArgumentParser(description="A very basic data cleaning")
 
     parser.add_argument(
-        "--parameter1", 
-        type=str, ## INSERT TYPE HERE: str, float or int,
-        help=" ## INSERT DESCRIPTION HERE",
+        "--input_artifact",
+        type=str,
+        help="the input artifact",
         required=True
     )
 
     parser.add_argument(
-        "--parameter2", 
-        type=str, ## INSERT TYPE HERE: str, float or int,
-        help=" ## INSERT DESCRIPTION HERE",
+        "--output_artifact",
+        type=str,
+        help="the name for the output artifact",
         required=True
     )
 
     parser.add_argument(
-        "--parameter3", 
-        type=str, ## INSERT TYPE HERE: str, float or int,
-        help=" ## INSERT DESCRIPTION HERE",
+        "--output_type",
+        type=str,
+        help="the type for the output artifact",
+        required=True
+    )
+
+    parser.add_argument(
+        "--output_description",
+        type=str,
+        help="a description for the output artifact",
+        required=True
+    )
+
+    parser.add_argument(
+        "--min_price",
+        type=float,
+        help="the minimum price to consider",
+        required=True
+    )
+
+    parser.add_argument(
+        "--max_price",
+        type=float,
+        help="the maximum price to consider",
         required=True
     )
 
