@@ -7,6 +7,7 @@ import logging
 import os
 import shutil
 import matplotlib.pyplot as plt
+from typing import List
 
 import mlflow
 import json
@@ -54,7 +55,7 @@ def go(args):
     ######################################
     # Use run.use_artifact(...).file() to get the train and validation artifact (args.trainval_artifact)
     # and save the returned path in train_local_pat
-    trainval_local_path = # YOUR CODE HERE
+    trainval_local_path = run.use_artifact(args.trainval_artifact).file()
     ######################################
 
     X = pd.read_csv(trainval_local_path)
@@ -74,8 +75,8 @@ def go(args):
     logger.info("Fitting")
 
     ######################################
-    # Fit the pipeline sk_pipe by calling the .fit method on X_train and y_train
-    # YOUR CODE HERE
+    logger.info("Fit the pipeline sk_pipe by calling the .fit method on X_train and y_train")
+    sk_pipe.fit(X_train, y_train)
     ######################################
 
     # Compute r2 and MAE
@@ -97,7 +98,11 @@ def go(args):
     ######################################
     # Save the sk_pipe pipeline as a mlflow.sklearn model in the directory "random_forest_dir"
     # HINT: use mlflow.sklearn.save_model
-    # YOUR CODE HERE
+    mlflow.sklearn.save_model(sk_model=sk_pipe,
+                              path="random_forest_dir",
+                              serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+                              input_example=X_val.iloc[:2],
+                              )
     ######################################
 
     ######################################
@@ -106,7 +111,13 @@ def go(args):
     # type, provide a description and add rf_config as metadata. Then, use the .add_dir method of the artifact instance
     # you just created to add the "random_forest_dir" directory to the artifact, and finally use
     # run.log_artifact to log the artifact to the run
-    # YOUR CODE HERE
+    artifact = wandb.Artifact(name=args.output_artifact,
+                              type="model_export",
+                              description="NYC short time rental random classification model",
+                              metadata=rf_config)
+    artifact.add_dir(local_path="random_forest_dir")
+    run.log_artifact(artifact)
+    artifact.wait()
     ######################################
 
     # Plot feature importance
@@ -116,10 +127,10 @@ def go(args):
     # Here we save r_squared under the "r2" key
     run.summary['r2'] = r_squared
     # Now log the variable "mae" under the key "mae".
-    # YOUR CODE HERE
+    run.summary['mae'] = mae
     ######################################
 
-    # Upload to W&B the feture importance visualization
+    # Upload to W&B the feature importance visualization
     run.log(
         {
           "feature_importance": wandb.Image(fig_feat_imp),
@@ -143,7 +154,7 @@ def plot_feature_importance(pipe, feat_names):
     return fig_feat_imp
 
 
-def get_inference_pipeline(rf_config, max_tfidf_features):
+def get_inference_pipeline(rf_config, max_tfidf_features: int) -> (Pipeline, List[str]):
     # Let's handle the categorical features first
     # Ordinal categorical are categorical values for which the order is meaningful, for example
     # for room type: 'Entire home/apt' > 'Private room' > 'Shared room'
@@ -158,7 +169,10 @@ def get_inference_pipeline(rf_config, max_tfidf_features):
     # Build a pipeline with two steps:
     # 1 - A SimpleImputer(strategy="most_frequent") to impute missing values
     # 2 - A OneHotEncoder() step to encode the variable
-    non_ordinal_categorical_preproc = # YOUR CODE HERE
+    non_ordinal_categorical_preproc = Pipeline([
+        ('simple_imputer', SimpleImputer(strategy="most_frequent")),
+        ('one-hot_encoder', OneHotEncoder())
+    ])
     ######################################
 
     # Let's impute the numerical columns to make sure we can handle missing values
@@ -210,14 +224,17 @@ def get_inference_pipeline(rf_config, max_tfidf_features):
     processed_features = ordinal_categorical + non_ordinal_categorical + zero_imputed + ["last_review", "name"]
 
     # Create random forest
-    random_Forest = RandomForestRegressor(**rf_config)
+    random_forest = RandomForestRegressor(**rf_config)
 
     ######################################
     # Create the inference pipeline. The pipeline must have 2 steps: a step called "preprocessor" applying the
     # ColumnTransformer instance that we saved in the `preprocessor` variable, and a step called "random_forest"
     # with the random forest instance that we just saved in the `random_forest` variable.
     # HINT: Use the explicit Pipeline constructor so you can assign the names to the steps, do not use make_pipeline
-    sk_pipe = # YOUR CODE HERE
+    sk_pipe = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('random_forest', random_forest)
+    ])
 
     return sk_pipe, processed_features
 
@@ -275,6 +292,6 @@ if __name__ == "__main__":
         required=True,
     )
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    go(args)
+    go(arguments)

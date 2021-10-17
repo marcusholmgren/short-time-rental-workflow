@@ -30,7 +30,7 @@ entry_points:
 
       max_tfidf_features:
         description: Maximum number of words to consider for the TFIDF
-        type: string
+        type: int
 
       output_artifact:
         description: Name for the output artifact

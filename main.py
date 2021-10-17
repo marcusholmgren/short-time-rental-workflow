@@ -16,7 +16,7 @@ _steps = [
     # NOTE: We do not include this in the steps so it is not run by mistake.
     # You first need to promote a model export to "prod" before you can run this,
     # then you need to run this step explicitly
-    #    "test_regression_model"
+    "test_regression_model"
 ]
 
 
@@ -101,23 +101,25 @@ def go(config: DictConfig):
                 os.path.join(root_path, "src", "train_random_forest"),
                 "main",
                 parameters={
-                    "trainval_artifact": "<todo>",
+                    "trainval_artifact": "trainval_data.csv:latest",
                     "val_size": config['modeling']['val_size'],
                     "random_seed": config['modeling']['random_seed'],
                     "stratify_by": config['modeling']['stratify_by'],
                     "rf_config": rf_config,
                     "max_tfidf_features": config['modeling']['max_tfidf_features'],
-                    "output_artifact": "<todo>"
+                    "output_artifact": config['modeling']['export_artifact']
                 }
             )
 
         if "test_regression_model" in active_steps:
+            # bug with mlflow 1.14.1 does not allow for running the GitHub component. Instead use local version with upgrade mlflow version.
+            # f"{config['main']['components_repository']}/test_regression_model",
             _ = mlflow.run(
-                f"{config['main']['components_repository']}/test_regression_model",
+                os.path.join(root_path, "components", "test_regression_model"),
                 "main",
                 parameters={
-                    "mlflow_model": "<todo>",
-                    "test_dataset": "<todo>"
+                    "mlflow_model": f"{config['modeling']['export_artifact']}:prod",
+                    "test_dataset": "test_data.csv:latest"
                 }
             )
 
