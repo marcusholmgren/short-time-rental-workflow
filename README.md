@@ -551,6 +551,13 @@ train the model on a new sample of data that our company received (``sample2.csv
              -P hydra_options="etl.sample='sample2.csv'"
 ```
 
+Run the release tagged 1.0.0 from this repository
+```bash
+mlflow run https://github.com/marcusholmgren/short-time-rental-workflow.git \
+             -v 1.0.0 \
+             -P hydra_options="etl.sample='sample2.csv'"
+```
+
 **_NOTE_**: the file ``sample2.csv`` contains more data than ``sample1.csv`` so the training will
             be a little slower.
 
