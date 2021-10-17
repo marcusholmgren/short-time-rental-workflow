@@ -101,13 +101,13 @@ def go(config: DictConfig):
                 os.path.join(root_path, "src", "train_random_forest"),
                 "main",
                 parameters={
-                    "trainval_artifact": "<todo>",
+                    "trainval_artifact": "trainval_data.csv:latest",
                     "val_size": config['modeling']['val_size'],
                     "random_seed": config['modeling']['random_seed'],
                     "stratify_by": config['modeling']['stratify_by'],
                     "rf_config": rf_config,
                     "max_tfidf_features": config['modeling']['max_tfidf_features'],
-                    "output_artifact": "<todo>"
+                    "output_artifact": config['modeling']['export_artifact']
                 }
             )
 
@@ -116,8 +116,8 @@ def go(config: DictConfig):
                 f"{config['main']['components_repository']}/test_regression_model",
                 "main",
                 parameters={
-                    "mlflow_model": "<todo>",
-                    "test_dataset": "<todo>"
+                    "mlflow_model": f"{config['modeling']['export_artifact']}:latest",
+                    "test_dataset": "test_data.csv:latest"
                 }
             )
 
